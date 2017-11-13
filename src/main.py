@@ -5,7 +5,7 @@ import logging
 
 if __name__ == '__main__':
     input_data = get_input()
-    logging.basicConfig(filename='log.log', level=logging.INFO,format='%(asctime)s %(levelname)s:%(message)s')
+    logging.basicConfig(filename='log.log', level=logging.INFO,format='%(asctime)s %(levelname)s: %(message)s')
     excel_io = EXCEL(input_file_path=input_data.input_file,
                      output_folder=input_data.output_dir,
                      row_number=input_data.from_line)
@@ -17,7 +17,10 @@ if __name__ == '__main__':
         exit()
     if type(edited_file) == tuple:
         print(RUNNING_ERROR_STRING.format(edited_file[2].__class__.__name__,edited_file[2], edited_file[1]))
+        logging.warning('saving with error')
         excel_io.save_data_to_excel_wb(edited_file[0])
+
     else:
+        logging.info('saving file run finished')
         excel_io.save_data_to_excel_wb(edited_file)
 

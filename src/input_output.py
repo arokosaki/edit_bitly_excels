@@ -62,6 +62,7 @@ class EXCEL(InputOutput):
         pass
 
     def save_data_to_excel_wb(self,data_list):
+        self.create_entire_folder_path(path=self.output_folder)
         wb = openpyxl.Workbook(write_only=True)
         ws = wb.create_sheet()
         for row in data_list:

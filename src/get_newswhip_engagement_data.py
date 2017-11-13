@@ -4,7 +4,7 @@ from .api_key import API_KEY
 from .exceptions import NewswhipError,OutOfRequests,APIKeyExpired
 import logging
 
-RUN_OUT_ID = r'cbdd1675-e9e3-4859-bd59-93c139713818'
+RUN_OUT_MESSAGE = r'Youâ€™re requesting too many kittens! Slow down!'
 API_EXPIRED_MESSAGE = r'Your API has expired. Please contact api@newswhip.com to renew it.'
 
 
@@ -94,7 +94,7 @@ class SendApiPostRequest(object):
         if type(response) == dict and 'error' in response.keys():
             identifier = response['error']['id']
             message = response['error']['message']
-            if identifier == RUN_OUT_ID:
+            if message == RUN_OUT_MESSAGE:
                 raise OutOfRequests(identifier=identifier,messege=message)
             elif message == API_EXPIRED_MESSAGE:
                 raise APIKeyExpired(identifier=identifier,messege=message)
