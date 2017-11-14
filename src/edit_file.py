@@ -8,16 +8,16 @@ class EditFile(object):
     NEW_HEADLINES = ['Full URL', 'Facebook Total', 'Twitter', 'Total Engagement']
 
     def execute(self, data_list,start_from=None):
-        if not start_from:
-            start_from = 1
+        start_from = start_from or 1
         result = []
-        result.append(data_list[0]+self.NEW_HEADLINES)
         logging.info('starting file edit')
+        result.append(data_list[0]+self.NEW_HEADLINES)
         for i,row in enumerate(data_list[start_from:]):
             try:
                 full_url = GetFullURL().execute(row[5])
                 engagement = GetEngagmentStats().get_engagement_stats_from_url(full_url)
             except InternetException as e:
+                logging.exception(e)
                 return result, i, e
             row.append(full_url)
             row.append(engagement.fb_total)

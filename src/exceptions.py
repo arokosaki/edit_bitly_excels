@@ -19,4 +19,7 @@ InternetException = RequestException
 
 
 RUNNING_ERROR_STRING = 'Execution has stopped in the middle do to exception: \'{}\'\n' \
-                       'Excepction text: \'{}\'\nlast line to be processed is: {}.'
+                       'last line to be processed is: {}.'
+
+RUN_OUT_MESSAGE = r'Youâ€™re requesting too many kittens! Slow down!'
+API_EXPIRED_MESSAGE = r'Your API has expired. Please contact api@newswhip.com to renew it.'

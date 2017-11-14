@@ -1,13 +1,13 @@
 import requests,json,time
 from collections import namedtuple
 from .api_key import API_KEY
-from .exceptions import NewswhipError,OutOfRequests,APIKeyExpired
+from .exceptions import NewswhipError,OutOfRequests,APIKeyExpired,RUN_OUT_MESSAGE,API_EXPIRED_MESSAGE
+from .log_and_interface import LogMessages,http_log_setup
 import logging
 
-RUN_OUT_MESSAGE = r'Youâ€™re requesting too many kittens! Slow down!'
-API_EXPIRED_MESSAGE = r'Your API has expired. Please contact api@newswhip.com to renew it.'
 
 
+log = http_log_setup()
 
 class SendApiPostRequest(object):
 
@@ -83,10 +83,14 @@ class SendApiPostRequest(object):
 
         url = self.API_URL + request_type
         data = self._create_data_string(filters=filters,**kwargs)
+        log.debug('sending request')
         api_request = requests.post(url=url,
                                     headers=self.headers,
                                     params=self.params,
                                     data=data)
+
+        log.debug(LogMessages.REQUEST_LOG_MESSAGE.format(api_request.request.url, api_request.request.body))
+        log.debug(LogMessages.RESPONSE_LOG_MESSAGE.format(api_request.status_code, api_request.text))
 
         response = json.loads(api_request.text)
 
@@ -145,4 +149,3 @@ class GetEngagmentStats(object):
                                          total_engagement=response[0]['total'])
         else:
             return self.engagement_stats('Null','Null','Null')
-
