@@ -2,7 +2,7 @@ from .input_output import EXCEL,get_input
 from .edit_file import EditFile
 from .exceptions import RUNNING_ERROR_STRING,APIKeyExpired
 from .log_and_interface import main_log_setup
-import logging
+
 
 
 log = main_log_setup()
@@ -27,5 +27,3 @@ if __name__ == '__main__':
     else:
         log.info('saving file run finished')
         excel_io.save_data_to_excel_wb(edited_file)
-
-logging.getLogger()
