@@ -3,10 +3,16 @@ from .get_full_url import GetFullURL
 from .exceptions import InternetException
 from .log_and_interface import printProgressBar
 import logging
+from collections import namedtuple
+
 class EditFile(object):
 
 
     NEW_HEADLINES = ['Full URL', 'Facebook Total', 'Twitter', 'Total Engagement']
+
+    def __init__(self):
+        self.result = namedtuple('result',['result','line_number','error'])
+
 
     def execute(self, data_list,start_from=None):
         start_from = start_from or 1
@@ -22,7 +28,7 @@ class EditFile(object):
             except (InternetException,KeyboardInterrupt) as e:
                 logging.exception(e)
                 print()
-                return result, i, e
+                return self.result(result=result,line_number=i,error=e)
             row.append(full_url)
             row.append(engagement.fb_total)
             row.append(engagement.twitter)

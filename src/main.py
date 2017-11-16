@@ -13,17 +13,21 @@ if __name__ == '__main__':
                      output_folder=input_data.output_dir,
                      row_number=input_data.from_line)
     data_list = excel_io.get_data_in_list_form()
+
     try:
+        print('Starting processing:')
         edited_file = EditFile().execute(data_list,start_from=input_data.from_line)
     except APIKeyExpired as e:
         print(e)
         exit()
-    if type(edited_file) == tuple:
-        print(RUNNING_ERROR_STRING.format(edited_file[2].__class__.__name__, edited_file[1]))
-        log.error(RUNNING_ERROR_STRING.format(edited_file[2].__class__.__name__, edited_file[1]))
+    if isinstance(edited_file,tuple):
+        print(RUNNING_ERROR_STRING.format(edited_file.error.__class__.__name__, edited_file.line_number))
+        log.error(RUNNING_ERROR_STRING.format(edited_file.error.__class__.__name__, edited_file.line_number))
         log.info('saving with error')
-        excel_io.save_data_to_excel_wb(edited_file[0])
+        excel_io.save_data_to_excel_wb(edited_file.result)
 
     else:
         log.info('saving file run finished')
         excel_io.save_data_to_excel_wb(edited_file)
+        print('Running ended')
+        
