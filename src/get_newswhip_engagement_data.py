@@ -78,6 +78,7 @@ class SendApiPostRequest(object):
                        'from' parameter should be written with capital F to avoid confusion with python key word
 
         :return: information list[dict]
+        :exception: NewsWhipError and sub classes OutOfRequests and ApiKeyExpired
         :rtype: list[dict]
         '''
 
@@ -125,11 +126,21 @@ class GetEngagmentStats(object):
 
     @classmethod
     def _get_max_from(cls):
+        '''
+
+        :return: the max time from which newswhip saves data
+        '''
         now = time.time()
         return round((now - cls.DAY_IN_SECONDS * cls.TIME_LIMIT_DAYS) * 1000)
 
     def get_engagement_stats_from_url(self,url):
+        '''
+
+        :param str url: the url of article
+        :return namedtuple: containing engagement data on facebook, twitter and total
+        '''
         max_from = self._get_max_from()
+        #  create filter for request according to url
         filters = self.FILTERS_BASE_STRING % url
         while True:
             try:
