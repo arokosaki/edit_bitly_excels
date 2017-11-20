@@ -78,7 +78,7 @@ def get_input():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file',help="Add input file path in quotes")
     parser.add_argument('-o', '--output_dir',help='Output folder optional')
-    parser.add_argument('-l', '--from_line', type=int, help='If former execution failed start from where it ended')
+    parser.add_argument('-l', '--from_line', type=int, help='start from excel row number')
     args = parser.parse_args()
     if not os.path.isfile(args.input_file):
         print('Input file path is invalid')
