@@ -24,10 +24,9 @@ if __name__ == '__main__':
         print(RUNNING_ERROR_STRING.format(edited_file.error.__class__.__name__, edited_file.line_number))
         log.error(RUNNING_ERROR_STRING.format(edited_file.error.__class__.__name__, edited_file.line_number))
         log.info('saving with error')
-        excel_io.save_data_to_excel_wb(edited_file.result)
+        excel_io.save_data_to_excel_wb(edited_file.result,error=True)
 
     else:
         log.info('saving file run finished')
         excel_io.save_data_to_excel_wb(edited_file)
         print('Running ended')
-        

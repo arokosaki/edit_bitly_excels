@@ -2,11 +2,12 @@ import os,csv,openpyxl,argparse
 
 class InputOutput(object):
 
-    def __init__(self,input_file_path='',output_folder=None,row_number=0):
+    def __init__(self,input_file_path='',output_folder=None,row_number=None):
 
         self.input_file_path = input_file_path
         self.file_name = os.path.basename(input_file_path).split('.')
         self.output_folder = output_folder or os.path.dirname(input_file_path)
+        self.row_number = row_number or 2
         if row_number:
             self.output_file_name = self.file_name[0]+'_output_from_row_{}.'.format(row_number)+self.file_name[-1]
         else:
@@ -61,13 +62,16 @@ class EXCEL(InputOutput):
     def get_relevent_column(self,column):
         pass
 
-    def save_data_to_excel_wb(self,data_list):
+    def save_data_to_excel_wb(self,data_list,error=False):
         self.create_entire_folder_path(path=self.output_folder)
         wb = openpyxl.Workbook(write_only=True)
         ws = wb.create_sheet()
         for row in data_list:
             ws.append(row)
-        wb.save(self.output_file_path)
+        output_file_path = self.output_file_path
+        if error:
+            output_file_path = self.output_file_path[:-5] + '_until_row_{}.xlsx'.format(self.row_number+len(data_list)-2)
+        wb.save(output_file_path)
 
 
 def get_input():
