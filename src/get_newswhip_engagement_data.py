@@ -3,7 +3,6 @@ from collections import namedtuple
 from .api_key import API_KEY
 from .exceptions import NewswhipError,OutOfRequests,APIKeyExpired,RUN_OUT_MESSAGE,API_EXPIRED_MESSAGE
 from .log_and_interface import LogMessages,http_log_setup
-import logging
 
 
 
@@ -13,6 +12,8 @@ class SendApiPostRequest(object):
 
     API_URL = 'https://api.newswhip.com/v1/'
     HEADERS = {'Content-Type': 'application/json',}
+    DAY_IN_SECONDS = 86400
+    TIME_LIMIT_DAYS = 182
 
 
     def __init__(self,api_key=None,headers=None):
@@ -20,6 +21,15 @@ class SendApiPostRequest(object):
         self.api_key = api_key or API_KEY
         self.params = (('key', self.api_key),)
         self.headers = headers or self.HEADERS
+
+    @classmethod
+    def get_max_from(cls):
+        '''
+
+        :return: the max time from which newswhip saves data
+        '''
+        now = time.time()
+        return round((now - cls.DAY_IN_SECONDS * cls.TIME_LIMIT_DAYS) * 1000)
 
     @classmethod
     def _cast_param_into_string(cls, param_info):
@@ -79,7 +89,6 @@ class SendApiPostRequest(object):
 
         :return: information list[dict]
         :exception: NewsWhipError and sub classes OutOfRequests and ApiKeyExpired
-        :rtype: list[dict]
         '''
 
         url = self.API_URL + request_type
@@ -91,7 +100,7 @@ class SendApiPostRequest(object):
                                     data=data)
 
         log.debug(LogMessages.REQUEST_LOG_MESSAGE.format(api_request.request.url, api_request.request.body))
-        log.debug(LogMessages.RESPONSE_LOG_MESSAGE.format(api_request.status_code, api_request.text))
+        log.debug(LogMessages.RESPONSE_LOG_MESSAGE.format(api_request.status_code,''))
 
         response = json.loads(api_request.text)
 
@@ -111,52 +120,52 @@ class SendApiPostRequest(object):
 
 
 
+class GetFacebookStats(SendApiPostRequest):
 
-class GetEngagmentStats(object):
-
-    DAY_IN_SECONDS = 86400
-    TIME_LIMIT_DAYS = 182
-    FILTERS_BASE_STRING = r"href:\"%s\""
-
-    def __init__(self,api_key=None,api=None):
-
-        self.engagement_stats = namedtuple('engagement_stats', ['fb_total', 'twitter', 'total_engagement'])
-        self.api = api or SendApiPostRequest(api_key)
+    FILTER_BASE_STRING = r'external_link:\"{}\"'
 
 
-    @classmethod
-    def _get_max_from(cls):
-        '''
+    def __init__(self):
+        self.result = namedtuple('fb_stats',
+                                 ['comments','likes','shares','loves','wows','hahas','sads',
+                                  'angrys','total_engagement_count'])
 
-        :return: the max time from which newswhip saves data
-        '''
-        now = time.time()
-        return round((now - cls.DAY_IN_SECONDS * cls.TIME_LIMIT_DAYS) * 1000)
+        super(GetFacebookStats,self).__init__()
 
-    def get_engagement_stats_from_url(self,url):
-        '''
+    def fix_url(self,url):
+        return url.replace('_','/posts/')
 
-        :param str url: the url of article
-        :return namedtuple: containing engagement data on facebook, twitter and total
-        '''
-        max_from = self._get_max_from()
-        #  create filter for request according to url
-        filters = self.FILTERS_BASE_STRING % url
+    def get_fb_stats(self,url):
+        From = self.get_max_from()
+        filters = self.FILTER_BASE_STRING.format(self.fix_url(url))
         while True:
             try:
-                response = self.api.send_api_request(request_type='stats',
-                                                     filters=filters,
-                                                     sort_by='fb_total.sum',
-                                                     aggregate_by='domain',
-                                                     From=max_from)
+                response = self.send_api_request(request_type='fbPosts',
+                                                 filters=filters,
+                                                 sort_by="fb_likes",
+                                                 From=From)
                 break
             except OutOfRequests:
-                logging.warning('out of api requests')
                 pass
 
-        if response:
-            return self.engagement_stats(fb_total=response[0]['stats']['fb_total']['sum'],
-                                         twitter=response[0]['stats']['twitter']['sum'],
-                                         total_engagement=response[0]['total'])
+        if response['fbPosts']:
+            reactions = response['fbPosts'][0]['fb_data']['reactions']
+            return self.result(comments=reactions['comments'],
+                               likes=reactions['likes'],
+                               shares=reactions['shares'],
+                               loves=reactions['loves'],
+                               wows=reactions['wows'],
+                               hahas=reactions['hahas'],
+                               sads=reactions['sads'],
+                               angrys=reactions['angrys'],
+                               total_engagement_count=response['fbPosts'][0]['fb_data']['total_engagement_count'])
         else:
-            return self.engagement_stats('Null','Null','Null')
+            return self.result(comments='Null',
+                               likes='Null',
+                               shares='Null',
+                               loves='Null',
+                               wows='Null',
+                               hahas='Null',
+                               sads='Null',
+                               angrys='Null',
+                               total_engagement_count='Null')

@@ -1,14 +1,14 @@
-from .get_newswhip_engagement_data import GetEngagmentStats,OutOfRequests,NewswhipError
-from .get_full_url import GetFullURL
+from .get_newswhip_engagement_data import GetFacebookStats
 from .exceptions import InternetException
 from .log_and_interface import printProgressBar
 import logging
 from collections import namedtuple
 
+
 class EditFile(object):
 
 
-    NEW_HEADLINES = ['Full URL', 'Facebook Total', 'Twitter', 'Total Engagement']
+    NEW_HEADLINES = ['Comments', 'Likes', 'Shares', 'Loves', 'Wows', 'Hahas', 'Sads', 'Angrys', 'Total Engagement']
 
     def __init__(self):
         self.result = namedtuple('result',['result','line_number','error'])
@@ -36,18 +36,15 @@ class EditFile(object):
 
         for i,row in enumerate(data_list[start_from-1:]):
             try:
-                full_url = GetFullURL().execute(row[5])
-                engagement = GetEngagmentStats().get_engagement_stats_from_url(full_url)
+                engagement = GetFacebookStats().get_fb_stats(row[0])
 
             #  if there is internet loss or user chooses to exit (ctrl-c). exit loop and save progress
             except (InternetException,KeyboardInterrupt) as e:
                 logging.exception(e)
                 print()
                 return self.result(result=result,line_number=(i-1+start_from),error=e)
-            row.append(full_url)
-            row.append(engagement.fb_total)
-            row.append(engagement.twitter)
-            row.append(engagement.total_engagement)
+            for stat in engagement:
+                row.append(stat)
             result.append(row)
             printProgressBar(i+1,total)
         return result

@@ -14,6 +14,9 @@ class APIKeyExpired(NewswhipError):
     """api key has expired"""
 
 
+class NotFBPost(ValueError):
+    """not a known fb post url"""
+
 NoInternet = ConnectionError
 InternetException = RequestException
 
